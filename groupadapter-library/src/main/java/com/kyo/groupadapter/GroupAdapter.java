@@ -17,6 +17,7 @@ package com.kyo.groupadapter;
 
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.SparseArray;
 import android.view.ViewGroup;
 
 import java.util.ArrayList;
@@ -27,31 +28,27 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * Created by jianghui on 4/29/16.
- */
-
 public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 	@NonNull
-	final RecyclerView.Adapter[] adapters;
-	final int adapterCount;
+	private final RecyclerView.Adapter[] adapters;
+	private final int adapterCount;
 	@NonNull
-	final int[] endPositions;
+	private final int[] endPositions;
 	// view type
 	@NonNull
-	final Map<Integer, Integer>[] viewTypeToGenerateViewTypeMaps; // [(viewType, generate viewType),(viewType, generate viewType)]
+	private final HashMap[] viewTypeToGenerateViewTypeMaps; // [(viewType, generate viewType),(viewType, generate viewType)]
 	@NonNull
-	final Map<Integer, ViewTypeInfo> generateViewTypeToViewTypeInfoMap; // (generate viewType , ViewTypeInfo(adapter position, viewType))
+	private final SparseArray<ViewTypeInfo> generateViewTypeToViewTypeInfoMap; // (generate viewType , ViewTypeInfo(adapter position, viewType))
 	@NonNull
-	final Map<Long, Long>[] itemIdToGenerateItemIdMaps;  // [(itemId, generate itemId),(itemId, generate itemId)]
+	private final HashMap[] itemIdToGenerateItemIdMaps;  // [(itemId, generate itemId),(itemId, generate itemId)]
 
 
-	boolean dataInvalid = true;
-	int resolvedAdapterIndex;
-	int resolvedItemIndex;
+	private boolean dataInvalid = true;
+	private int resolvedAdapterIndex;
+	private int resolvedItemIndex;
 
-	public GroupAdapter(@NonNull GroupAdapter.Builder builder) {
+	GroupAdapter(@NonNull GroupAdapter.Builder builder) {
 		int count = builder.adapters.size();
 		if (count < 0) {
 			throw new IllegalArgumentException("Must add at least one adapter");
@@ -61,7 +58,7 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		this.endPositions = new int[count];
 		this.viewTypeToGenerateViewTypeMaps = new HashMap[count];
 		this.itemIdToGenerateItemIdMaps = new HashMap[count];
-		this.generateViewTypeToViewTypeInfoMap = new HashMap<>();
+		this.generateViewTypeToViewTypeInfoMap = new SparseArray<>();
 		this.dataInvalid = true;
 
 		for (int i = 0; i < count; i++) {
@@ -75,11 +72,9 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		@NonNull
 		List<RecyclerView.Adapter> adapters = new ArrayList<>();
 
-		public void add(@NonNull RecyclerView.Adapter adapter) {
-			if (adapter == null) {
-				throw new NullPointerException();
-			}
+		public Builder add(@NonNull RecyclerView.Adapter adapter) {
 			adapters.add(adapter);
+			return this;
 		}
 
 		public GroupAdapter build() {
@@ -101,6 +96,7 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		return endPositions[adapterCount - 1];
 	}
 
+    @SuppressWarnings("unchecked")
 	@Override
 	public int getItemViewType(int position) {
 		resolveIndices(position);
@@ -120,6 +116,7 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		}
 	}
 
+    @SuppressWarnings("unchecked")
 	@Override
 	public long getItemId(int position) {
 		resolveIndices(position);
@@ -149,7 +146,8 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		return adapters[resolvedAdapterIndex].onCreateViewHolder(parent, resolvedViewType);
 	}
 
-	@Override
+	@SuppressWarnings("unchecked")
+    @Override
 	public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 		resolveIndices(position);
 		int resolvedAdapterIndex = this.resolvedAdapterIndex;
