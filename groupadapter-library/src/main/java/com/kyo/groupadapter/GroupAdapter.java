@@ -82,7 +82,6 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		}
 	}
 
-
 	@Override
 	public int getItemCount() {
 		if (dataInvalid) {
@@ -95,6 +94,10 @@ public class GroupAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
 		}
 		return endPositions[adapterCount - 1];
 	}
+
+	public void invalidateData(){
+	    dataInvalid = true;
+    }
 
     @SuppressWarnings("unchecked")
 	@Override
